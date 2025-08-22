@@ -16,8 +16,6 @@ import seaborn as sns
 
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
-from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
-from sklearn.linear_model import LogisticRegression
 
 """ # 2. Load the Dataset
 
@@ -74,10 +72,7 @@ plt.show()
 
 # Boxplot: categorical vs exam score
 # Use df_encoded for boxplots as categorical features were one-hot encoded
-sns.boxplot(x="SEX_2", y=target, data=df_encoded) # Assuming SEX_1 is one of the encoded columns
-plt.show()
-
-sns.boxplot(x="RACE_5", y=target, data=df_encoded) # Assuming RACE_1 is one of the encoded columns
+sns.boxplot(x="SEX_2", y=target, data=df_encoded) #  SEX_2 is one of the encoded columns
 plt.show()
 
 """#Prediction Model"""
@@ -88,7 +83,7 @@ from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 import numpy as np
 
 # 🎯 Step 1: Define target + features
-target = "BY2XRSTD"   # replace with your grade column name
+target = "F22XMSTD"   # replace with your grade column name
 X = df.drop(columns=[target])  # features
 y = df[target]                # target
 
@@ -143,4 +138,88 @@ print("Polynomial Regression (degree=3)")
 print("MAE:", mae)
 print("RMSE:", rmse)
 print("R²:", r2)
+
+# Step 1: Correlation with target
+target = "F22XMSTD"
+corr_matrix = df.corr()
+
+# Get correlations with target, sorted by absolute value
+corr_with_target = corr_matrix[target].abs().sort_values(ascending=False)
+print(corr_with_target)
+
+# Step 2: Pick features with correlation > threshold (e.g. 0.3)
+selected_features = corr_with_target[corr_with_target > 0.3].index.drop(target)
+print("Selected Features:", selected_features)
+
+# Step 3: Use only those features
+X = df[selected_features]
+y = df[target]
+
+# Train/Test Split
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42
+)
+
+# Train model
+lr = LinearRegression()
+lr.fit(X_train, y_train)
+
+# Predictions & evaluation
+y_pred = lr.predict(X_test)
+
+mae = mean_absolute_error(y_test, y_pred)
+rmse = np.sqrt(mean_squared_error(y_test, y_pred))
+r2 = r2_score(y_test, y_pred)
+
+print("\n📊 Correlation-Filtered Model")
+print(f"MAE: {mae:.2f}")
+print(f"RMSE: {rmse:.2f}")
+print(f"R²: {r2:.2f}")
+
+from sklearn.ensemble import RandomForestRegressor
+import pandas as pd
+import numpy as np
+
+# 🎯 Target (math score)
+target = "F22XMSTD"
+X = df.drop(columns=[target])
+y = df[target]
+
+# Train/test split
+from sklearn.model_selection import train_test_split
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# --- Train a Random Forest for feature importance ---
+rf = RandomForestRegressor(n_estimators=200, random_state=42)
+rf.fit(X_train, y_train)
+
+# Get feature importances
+importances = pd.Series(rf.feature_importances_, index=X.columns).sort_values(ascending=False)
+
+print("🔥 Top 15 Important Features from RandomForest:")
+print(importances.head(15))
+
+# --- Select top k features ---
+top_k = 15
+selected_features = importances.head(top_k).index
+
+X_train_sel = X_train[selected_features]
+X_test_sel = X_test[selected_features]
+
+# --- Train a Linear Regression on selected features ---
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
+
+lr = LinearRegression()
+lr.fit(X_train_sel, y_train)
+y_pred = lr.predict(X_test_sel)
+
+mae = mean_absolute_error(y_test, y_pred)
+rmse = np.sqrt(mean_squared_error(y_test, y_pred))
+r2 = r2_score(y_test, y_pred)
+
+print("\n📊 Tree-Based Feature Selected Model (Linear Regression)")
+print(f"MAE: {mae:.2f}")
+print(f"RMSE: {rmse:.2f}")
+print(f"R²: {r2:.2f}")
 

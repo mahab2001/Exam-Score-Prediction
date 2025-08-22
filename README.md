@@ -12,45 +12,66 @@ The main goal is to build models that estimate student **exam scores** based on 
 
 ---
 
-## 🚀 Features of the Project
-1. **Data Cleaning & Exploration**
-   - Checked for missing values
-   - Histograms & correlation heatmap
-   - Boxplots & pairplots for categorical vs numeric features
+Data Exploration & Visualization:
 
-2. **Feature Engineering**
-   - One-hot encoding for categorical variables (`SEX`, `RACE`, `HSSTAT`, `F4HSTYPE`)
-   - Standardization of numerical features
+Checked missing values, distributions, and correlations.
 
-3. **Modeling**
-   - Linear Regression (baseline)
-   - Polynomial Regression (comparison)
-   - Performance evaluated using **MAE, RMSE, R²**
+Visualized feature relationships with histograms, heatmaps, and pairplots.
 
-4. **Experimentation**
-   - Compared different feature groups (demographics, school-related, test history, all features)
-   - Identified that **prior test scores** are the strongest predictors of future performance.
+Feature Engineering:
 
----
+One-hot encoding of categorical variables (SEX, RACE, HSSTAT, F4HSTYPE).
 
-## 📊 Results
+Standardization of numerical features.
 
-### 🔹 Baseline Model (Linear Regression)
-- MAE: **4.04**  
-- RMSE: **5.14**  
-- R²: **0.70**
+Modeling Approaches:
 
-### 🔹 Subject-Level Regression (Math Example)
-- MAE: ~3.43  
-- RMSE: ~4.48  
-- R²: ~0.63  
+Baseline Linear Regression (All Features)
 
-### 🔹 Polynomial Regression
-- Degree 2 & 3 → Performance decreased (overfitting)  
-- MAE: ~4.46  
-- RMSE: ~5.80  
-- R²: ~0.62  
+All available features except the target were used.
 
-**Takeaway:**  
-- Prior academic performance is the strongest predictor of future scores.  
-- Baseline Linear Regression provides good performance with **R² = 0.70**, but more advanced models could potentially improve results.
+Performance:
+
+MAE: 2.92
+
+RMSE: 3.76
+
+R²: 0.79
+
+Correlation-Filtered Regression
+
+Selected only features with correlation > 0.3 with target (F22XMSTD).
+
+Performance:
+
+MAE: 2.91
+
+RMSE: 3.76
+
+R²: 0.79
+
+Tree-Based Feature Selection + Linear Regression
+
+Used RandomForestRegressor to rank feature importance.
+
+Selected top 15 features.
+
+Trained a linear regression model on this reduced feature set.
+
+Performance:
+
+MAE: 2.91
+
+RMSE: 3.76
+
+R²: 0.79
+
+Polynomial Regression was also tested but did not improve performance compared to linear regression.
+
+⚖️ Key Findings
+
+Prior test scores (Math, Reading, Science across different years) were the strongest predictors of future Math scores.
+
+Adding all features did not significantly improve performance compared to a smaller, correlation-based feature set.
+
+Tree-based feature selection highlighted the same set of predictors, confirming their importance.
